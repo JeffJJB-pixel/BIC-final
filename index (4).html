@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plus et moins-values en BIC — Projet de fiscalité</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#1a1a1a; --ink-soft:#4a4a4a; --muted:#767676;
+  --line:#e4e2dd; --line-soft:#efede8; --paper:#faf9f6; --card:#ffffff;
+  --accent:#1d4e6b; --accent-soft:#eef3f6;
+  --pos:#2f6b46; --pos-soft:#e9f1ec; --neg:#9c3a30; --neg-soft:#f6eae8;
+  --gold:#6b5a2e; --gold-soft:#fbf8f0; --gold-line:#e9e0c9;
+  --radius:10px; --maxw:780px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--paper);color:var(--ink);line-height:1.7;font-size:16px;-webkit-font-smoothing:antialiased;}
+
+/* NAV */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(250,249,246,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+.topbar-inner{max-width:1040px;margin:0 auto;padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:64px;}
+.logo{font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--ink);text-decoration:none;display:flex;align-items:baseline;gap:9px;cursor:pointer;background:none;border:none;}
+.logo .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;}
+.nav-links{display:flex;gap:4px;align-items:center;}
+.nav-links button{background:none;border:none;font-family:inherit;text-decoration:none;color:var(--ink-soft);font-size:14.5px;padding:8px 14px;border-radius:8px;cursor:pointer;transition:background .15s,color .15s;}
+.nav-links button:hover{background:var(--accent-soft);color:var(--accent);}
+.nav-links button.current{color:var(--accent);font-weight:600;}
+.nav-links button.cta{background:var(--accent);color:#fff;}
+.nav-links button.cta:hover{background:#163b52;color:#fff;}
+.burger{display:none;background:none;border:1px solid var(--line);border-radius:8px;padding:7px 12px;font-size:18px;cursor:pointer;color:var(--ink-soft);line-height:1;}
+
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;}
+
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;}
+
+/* HERO */
+.page-hero{padding:72px 0 48px;border-bottom:1px solid var(--line);}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:600;margin-bottom:18px;}
+h1{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(30px,5vw,44px);line-height:1.12;letter-spacing:-.01em;margin-bottom:20px;}
+.lede{font-size:18px;color:var(--ink-soft);max-width:620px;}
+.lede strong{color:var(--ink);font-weight:600;}
+.pitch{margin-top:32px;padding:22px 24px;background:var(--accent-soft);border-radius:var(--radius);font-size:15.5px;color:var(--accent);line-height:1.6;}
+.pitch b{font-weight:600;}
+
+/* SECTIONS */
+section{padding:56px 0;border-bottom:1px solid var(--line);}
+section:last-of-type{border-bottom:none;}
+.sec-num{font-family:'Fraunces',serif;font-size:14px;color:var(--accent);margin-bottom:10px;}
+h2{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(24px,3.6vw,30px);line-height:1.2;margin-bottom:16px;letter-spacing:-.01em;}
+.intro-line{font-size:16.5px;color:var(--ink-soft);margin-bottom:32px;padding-left:16px;border-left:2px solid var(--accent);}
+h3{font-family:'Fraunces',serif;font-weight:600;font-size:19px;margin:36px 0 12px;}
+p{margin-bottom:16px;color:var(--ink-soft);}
+p.body-ink{color:var(--ink);}
+.term{color:var(--ink);font-weight:600;}
+
+.def{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin:18px 0;}
+.def .word{font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--ink);margin-bottom:6px;}
+.def p{margin:0;font-size:15px;}
+
+ul.clean{list-style:none;margin:14px 0 22px;}
+ul.clean li{position:relative;padding-left:22px;margin-bottom:10px;color:var(--ink-soft);font-size:15.5px;}
+ul.clean li::before{content:'';position:absolute;left:2px;top:11px;width:6px;height:6px;border-radius:50%;background:var(--accent);}
+
+ol.steps{list-style:none;counter-reset:s;margin:20px 0;}
+ol.steps li{counter-increment:s;position:relative;padding:16px 0 16px 48px;border-top:1px solid var(--line-soft);font-size:15.5px;color:var(--ink-soft);}
+ol.steps li:last-child{border-bottom:1px solid var(--line-soft);}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:16px;width:28px;height:28px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:14px;}
+ol.steps li b{color:var(--ink);}
+
+.table-scroll{overflow-x:auto;margin:22px 0;}
+table{width:100%;border-collapse:collapse;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+th{text-align:left;padding:12px 14px;background:#f3f1ec;font-weight:600;color:var(--ink);font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);}
+td{padding:12px 14px;border-bottom:1px solid var(--line-soft);color:var(--ink-soft);}
+tr:last-child td{border-bottom:none;}
+td strong{color:var(--ink);}
+.num-cell{font-variant-numeric:tabular-nums;white-space:nowrap;}
+.tag-pos{color:var(--pos);font-weight:600;}
+.tag-neg{color:var(--neg);font-weight:600;}
+
+.calc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px;margin:20px 0;}
+.calc-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line-soft);}
+.calc-head .name{font-family:'Fraunces',serif;font-weight:600;font-size:17px;color:var(--ink);}
+.verdict{font-size:13px;font-weight:600;padding:3px 12px;border-radius:20px;}
+.v-pos{background:var(--pos-soft);color:var(--pos);}
+.v-neg{background:var(--neg-soft);color:var(--neg);}
+.calc-line{display:flex;justify-content:space-between;gap:16px;padding:7px 0;font-size:14.5px;}
+.calc-line .lbl{color:var(--muted);}
+.calc-line .val{font-variant-numeric:tabular-nums;color:var(--ink);font-weight:500;}
+.calc-line.total{border-top:1px solid var(--line);margin-top:6px;padding-top:12px;font-weight:600;}
+.calc-line.total .lbl{color:var(--ink);}
+
+.note{background:var(--gold-soft);border:1px solid var(--gold-line);border-radius:var(--radius);padding:16px 20px;margin:20px 0;font-size:14.5px;color:var(--gold);}
+.note b{color:#57491f;}
+
+.flow{margin:26px 0;}
+.flow-step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;margin-bottom:12px;}
+.flow-q{font-weight:600;color:var(--ink);font-size:15.5px;margin-bottom:8px;}
+.flow-branch{display:flex;gap:12px;flex-wrap:wrap;}
+.flow-branch span{font-size:13.5px;padding:5px 12px;border-radius:6px;background:var(--accent-soft);color:var(--accent);}
+.flow-arrow{text-align:center;color:var(--line);font-size:18px;margin:-4px 0 8px;}
+
+details{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+summary{padding:16px 20px;cursor:pointer;font-weight:600;color:var(--ink);font-size:15.5px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+summary::-webkit-details-marker{display:none;}
+summary::after{content:'+';font-family:'Fraunces',serif;font-size:22px;color:var(--accent);font-weight:400;flex-shrink:0;}
+details[open] summary::after{content:'–';}
+details .answer{padding:0 20px 18px;font-size:15px;color:var(--ink-soft);}
+details .answer p:last-child{margin-bottom:0;}
+
+/* CARTES ACCUEIL */
+.card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:8px 0;}
+.navcard{display:block;text-align:left;width:100%;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px;cursor:pointer;font-family:inherit;transition:transform .15s,box-shadow .15s,border-color .15s;}
+.navcard:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.06);border-color:var(--accent);}
+.navcard .nc-num{font-family:'Fraunces',serif;color:var(--accent);font-size:14px;margin-bottom:12px;}
+.navcard .nc-title{font-family:'Fraunces',serif;font-weight:600;font-size:19px;color:var(--ink);margin-bottom:8px;}
+.navcard .nc-desc{font-size:14.5px;color:var(--muted);line-height:1.55;}
+.navcard .nc-go{margin-top:14px;font-size:14px;color:var(--accent);font-weight:600;}
+
+/* PAGER */
+.pager{display:flex;justify-content:space-between;gap:16px;padding:40px 0 8px;flex-wrap:wrap;}
+.pager button{text-align:left;flex:1;min-width:200px;border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;background:var(--card);cursor:pointer;font-family:inherit;transition:border-color .15s,background .15s;}
+.pager button:hover{border-color:var(--accent);background:var(--accent-soft);}
+.pager .dir{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.pager .ttl{font-family:'Fraunces',serif;font-weight:600;color:var(--ink);font-size:16px;}
+.pager button.next{text-align:right;}
+
+/* FOOTER */
+footer{padding:48px 0 64px;color:var(--muted);font-size:13.5px;}
+footer .wrap{border-top:1px solid var(--line);padding-top:28px;}
+footer b{color:var(--ink-soft);}
+footer .src{margin-top:10px;font-size:12.5px;line-height:1.6;}
+
+/* JEU */
+.game{max-width:640px;margin:0 auto;padding:8px 0 16px;}
+.progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;font-size:14px;color:var(--muted);}
+.progress-row .score b{color:var(--accent);font-family:'Fraunces',serif;font-size:16px;}
+.bar{height:6px;background:var(--line-soft);border-radius:4px;overflow:hidden;flex:1;margin:0 16px;}
+.bar-fill{height:100%;background:var(--accent);width:0%;transition:width .4s ease;}
+.card-q{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.03);}
+.scenario-label{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:600;margin-bottom:12px;}
+.scenario-name{font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:var(--ink);margin-bottom:6px;}
+.scenario-desc{font-size:14.5px;color:var(--muted);margin-bottom:20px;}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:24px;}
+.fact{background:var(--card);padding:13px 16px;}
+.fact .fk{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px;}
+.fact .fv{font-size:16px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+.q-prompt{font-weight:600;font-size:16.5px;color:var(--ink);margin-bottom:16px;}
+.choices{display:grid;gap:10px;}
+.choice{text-align:left;width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:15px 18px;font-size:15.5px;color:var(--ink);cursor:pointer;font-family:inherit;transition:border-color .15s,background .15s;}
+.choice:hover:not(:disabled){border-color:var(--accent);background:var(--accent-soft);}
+.choice:disabled{cursor:default;}
+.choice.correct{border-color:var(--pos);background:var(--pos-soft);color:var(--pos);font-weight:600;}
+.choice.wrong{border-color:var(--neg);background:var(--neg-soft);color:var(--neg);font-weight:600;}
+.feedback{margin-top:20px;padding:16px 18px;border-radius:10px;font-size:14.5px;line-height:1.6;display:none;}
+.feedback.show{display:block;}
+.feedback.ok{background:var(--pos-soft);color:var(--pos);}
+.feedback.ko{background:var(--neg-soft);color:var(--neg);}
+.feedback b{font-weight:600;}
+.feedback .calc-mini{margin-top:8px;font-variant-numeric:tabular-nums;color:var(--ink-soft);font-size:13.5px;}
+.next-btn{margin-top:20px;width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:15px;font-size:15.5px;font-weight:600;font-family:inherit;cursor:pointer;display:none;transition:background .15s;}
+.next-btn.show{display:block;}
+.next-btn:hover{background:#163b52;}
+.result-screen{text-align:center;padding:20px 0;display:none;}
+.result-screen.show{display:block;}
+.result-screen .big{font-family:'Fraunces',serif;font-size:56px;font-weight:600;color:var(--accent);line-height:1;margin-bottom:8px;}
+.result-screen .out-of{color:var(--muted);font-size:16px;margin-bottom:18px;}
+.result-screen h2{margin-bottom:12px;}
+.result-screen p{max-width:440px;margin:0 auto 24px;}
+.result-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-primary,.btn-ghost{border-radius:10px;padding:13px 24px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;border:none;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#163b52;}
+.btn-ghost{background:var(--card);color:var(--accent);border:1.5px solid var(--line);}
+.btn-ghost:hover{border-color:var(--accent);}
+
+@media (max-width:720px){
+  .burger{display:block;}
+  .nav-links{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;gap:0;background:var(--paper);border-bottom:1px solid var(--line);padding:8px 16px 16px;}
+  .nav-links.open{display:flex;}
+  .nav-links button{padding:12px 14px;width:100%;text-align:left;}
+  .card-grid{grid-template-columns:1fr;}
+  .facts{grid-template-columns:1fr;}
+  .card-q{padding:22px;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <button class="logo" onclick="go('accueil')"><span class="dot"></span> Plus &amp; moins-values</button>
+    <button class="burger" onclick="toggleMenu()">☰</button>
+    <nav class="nav-links" id="navLinks">
+      <button data-nav="accueil" class="current" onclick="go('accueil')">Accueil</button>
+      <button data-nav="cours" onclick="go('cours')">Le cours</button>
+      <button data-nav="cas" onclick="go('cas')">Cas pratique</button>
+      <button data-nav="schema" onclick="go('schema')">Schéma</button>
+      <button data-nav="jeu" class="cta" onclick="go('jeu')">Le jeu</button>
+    </nav>
+  </div>
+</div>
+
+<!-- ============ ACCUEIL ============ -->
+<div class="page active" id="page-accueil">
+  <header class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow">Projet de fiscalité · Module BIC</div>
+      <h1>Quand une entreprise vend un bien,<br>gagne-t-elle ou perd-elle de l'argent&nbsp;?</h1>
+      <p class="lede">Ce site explique, étape par étape, comment une entreprise calcule le <strong>gain</strong> ou la <strong>perte</strong> réalisé quand elle vend un bien qu'elle possédait (une machine, un local, un véhicule…), et comment cet argent est imposé.</p>
+      <div class="pitch"><b>En une phrase :</b> une « plus-value » est un gain réalisé à la revente d'un bien, une « moins-value » est une perte. Le but du projet est de savoir les calculer, les classer, et déterminer l'impôt à payer.</div>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-num">Par où commencer</div>
+      <h2>Naviguer dans le projet</h2>
+      <p class="intro-line">Quatre espaces. Commencez par le cours si le sujet est nouveau, ou allez directement au jeu pour tester votre compréhension.</p>
+      <div class="card-grid">
+        <button class="navcard" onclick="go('cours')">
+          <div class="nc-num">01</div><div class="nc-title">Le cours</div>
+          <div class="nc-desc">Les mots à connaître, la méthode de calcul, et la différence entre court terme et long terme. Tout en langage simple.</div>
+          <div class="nc-go">Lire le cours →</div>
+        </button>
+        <button class="navcard" onclick="go('cas')">
+          <div class="nc-num">02</div><div class="nc-title">Le cas pratique</div>
+          <div class="nc-desc">Une entreprise fictive vend cinq biens. On calcule chaque vente, on la classe, et on trouve l'impôt.</div>
+          <div class="nc-go">Voir le cas chiffré →</div>
+        </button>
+        <button class="navcard" onclick="go('schema')">
+          <div class="nc-num">03</div><div class="nc-title">Le schéma</div>
+          <div class="nc-desc">Tout le raisonnement résumé en cinq questions à se poser dans l'ordre. La carte du projet.</div>
+          <div class="nc-go">Voir le schéma →</div>
+        </button>
+        <button class="navcard" onclick="go('jeu')">
+          <div class="nc-num">04</div><div class="nc-title">Le jeu</div>
+          <div class="nc-desc">Une entreprise vous présente des ventes. À vous de dire : gain ou perte ? court ou long terme ? Score à la clé.</div>
+          <div class="nc-go">Jouer →</div>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-num">L'essentiel</div>
+      <h2>Le projet en trois idées</h2>
+      <p class="intro-line">Si vous ne deviez retenir que ça.</p>
+      <ul class="clean">
+        <li><b>Comparer deux montants.</b> Tout part d'une comparaison : le prix de vente d'un bien face à ce qu'il vaut encore dans les comptes (sa « valeur nette comptable »).</li>
+        <li><b>Classer le résultat.</b> Un gain ou une perte se range en « court terme » ou « long terme » — et ce classement décide du taux d'impôt.</li>
+        <li><b>Vérifier avant d'imposer.</b> Certaines situations sont exonérées d'impôt. On vérifie toujours avant de calculer.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<!-- ============ COURS ============ -->
+<div class="page" id="page-cours">
+  <header class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow">Le cours</div>
+      <h1>Comprendre les plus et moins-values</h1>
+      <p class="lede">Les mots à connaître, la méthode de calcul, et la règle qui décide du taux d'impôt. <strong>Tout est expliqué en langage simple.</strong></p>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-num">01</div>
+      <h2>Les mots à connaître</h2>
+      <p class="intro-line">Avant de calculer quoi que ce soit, voici les quatre termes qui reviennent partout.</p>
+      <div class="def"><div class="word">Plus-value</div><p>L'entreprise vend un bien <span class="term">plus cher</span> que ce qu'il « vaut encore » dans ses comptes. Elle réalise un gain.</p></div>
+      <div class="def"><div class="word">Moins-value</div><p>L'entreprise vend un bien <span class="term">moins cher</span> que ce qu'il vaut encore dans ses comptes. Elle réalise une perte.</p></div>
+      <div class="def"><div class="word">BIC — Bénéfices Industriels et Commerciaux</div><p>C'est la catégorie d'impôt qui concerne les activités commerciales, industrielles ou artisanales (achat-revente, services, fabrication…). Notre cas pratique se situe dans ce régime.</p></div>
+      <div class="def"><div class="word">VNC — Valeur Nette Comptable</div><p>C'est ce que « vaut encore » le bien dans les comptes au moment de la vente. On part du prix d'achat, dont on retire l'usure déjà constatée (les amortissements). <b>C'est la valeur de référence pour savoir si on gagne ou si on perd.</b></p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-num">02</div>
+      <h2>Comment on calcule</h2>
+      <p class="intro-line">Le calcul tient en deux temps : on trouve la valeur de référence du bien, puis on la compare au prix de vente.</p>
+      <h3>Étape 1 — La valeur de référence (VNC)</h3>
+      <p class="body-ink">VNC = prix d'achat − usure déjà constatée (amortissements)</p>
+      <p>Un bien perd de la valeur avec le temps. Cette perte est enregistrée chaque année : ce sont les amortissements. Ce qui reste, c'est la VNC.</p>
+      <h3>Étape 2 — Le résultat de la vente</h3>
+      <p class="body-ink">Résultat = prix de vente − VNC</p>
+      <ul class="clean">
+        <li>Si le résultat est <span class="tag-pos">positif</span> → c'est une <b>plus-value</b> (gain).</li>
+        <li>Si le résultat est <span class="tag-neg">négatif</span> → c'est une <b>moins-value</b> (perte).</li>
+      </ul>
+      <div class="note"><b>Cas particulier — les biens non amortissables.</b> Certains biens (un terrain, des titres financiers) ne s'usent pas : il n'y a pas d'amortissement. Leur valeur de référence reste donc leur prix d'achat d'origine.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-num">03</div>
+      <h2>Court terme ou long terme&nbsp;?</h2>
+      <p class="intro-line">Une fois le gain ou la perte trouvé, il faut le classer. Ce classement décide du taux d'impôt. Deux questions suffisent.</p>
+      <ol class="steps">
+        <li><b>Le bien était-il amortissable&nbsp;?</b> (s'usait-il avec le temps&nbsp;?)</li>
+        <li><b>Depuis combien de temps l'entreprise le possédait&nbsp;?</b> (plus ou moins de 2&nbsp;ans&nbsp;?)</li>
+      </ol>
+      <p>En croisant ces deux réponses, on obtient le « court terme » (CT) ou le « long terme » (LT) :</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Situation</th><th>Moins de 2 ans</th><th>Plus de 2 ans</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Gain</strong><br><span style="font-size:13px;color:var(--muted)">bien amortissable</span></td><td>Court terme</td><td>Court terme jusqu'aux amortissements, long terme au-delà</td></tr>
+            <tr><td><strong>Gain</strong><br><span style="font-size:13px;color:var(--muted)">bien non amortissable</span></td><td>Court terme</td><td>Long terme</td></tr>
+            <tr><td><strong>Perte</strong></td><td>Court terme</td><td>Court terme (amortissable) / Long terme (non amortissable)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note"><b>Pourquoi ça compte&nbsp;?</b> Le court terme est ajouté au bénéfice normal et imposé comme lui. Le long terme bénéficie d'un taux réduit (généralement plus avantageux). C'est tout l'enjeu du classement.</div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="pager">
+      <button class="prev" onclick="go('accueil')"><div class="dir">← Précédent</div><div class="ttl">Accueil</div></button>
+      <button class="next" onclick="go('cas')"><div class="dir">Suivant →</div><div class="ttl">Le cas pratique</div></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CAS PRATIQUE ============ -->
+<div class="page" id="page-cas">
+  <header class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow">Cas pratique</div>
+      <h1>DUPONT INDUSTRIE</h1>
+      <p class="lede">Une entreprise fictive de <strong>fabrication de pièces mécaniques</strong>, imposée en BIC. En décembre, elle vend cinq biens. On applique la méthode du cours à chacun.</p>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-num">01</div>
+      <h2>Les biens vendus</h2>
+      <p class="intro-line">Voici les données de départ. À partir de là, on calcule chaque vente.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Bien</th><th class="num-cell">Achat</th><th class="num-cell">Amort.</th><th class="num-cell">Vente</th><th>Détention</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Tour numérique</strong></td><td class="num-cell">48 000 €</td><td class="num-cell">30 000 €</td><td class="num-cell">22 000 €</td><td>5 ans</td></tr>
+            <tr><td><strong>Entrepôt</strong></td><td class="num-cell">120 000 €</td><td class="num-cell">0 €</td><td class="num-cell">195 000 €</td><td>8 ans</td></tr>
+            <tr><td><strong>Camionnette</strong></td><td class="num-cell">24 000 €</td><td class="num-cell">7 200 €</td><td class="num-cell">14 000 €</td><td>14 mois</td></tr>
+            <tr><td><strong>Brevet anti-usure</strong></td><td class="num-cell">—</td><td class="num-cell">—</td><td class="num-cell">—</td><td>&gt; 2 ans</td></tr>
+            <tr><td><strong>Titres de participation</strong></td><td class="num-cell">—</td><td class="num-cell">0 €</td><td class="num-cell">—</td><td>&gt; 2 ans</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-num">02</div>
+      <h2>Analyse bien par bien</h2>
+      <p class="intro-line">Pour chaque bien : on calcule la VNC, on compare au prix de vente, on classe le résultat.</p>
+
+      <div class="calc">
+        <div class="calc-head"><span class="name">Tour numérique</span><span class="verdict v-pos">Plus-value · court terme</span></div>
+        <div class="calc-line"><span class="lbl">VNC = 48 000 − 30 000</span><span class="val">18 000 €</span></div>
+        <div class="calc-line"><span class="lbl">Prix de vente</span><span class="val">22 000 €</span></div>
+        <div class="calc-line total"><span class="lbl">Résultat = 22 000 − 18 000</span><span class="val">+4 000 €</span></div>
+        <p style="margin:12px 0 0;font-size:14px;">Revendu au-dessus de sa VNC : c'est un gain. Comme il provient d'un bien amortissable, il est <b>de court terme</b> à hauteur des amortissements déduits.</p>
+      </div>
+
+      <div class="calc">
+        <div class="calc-head"><span class="name">Entrepôt</span><span class="verdict v-pos">Plus-value · long terme</span></div>
+        <div class="calc-line"><span class="lbl">VNC (non amortissable)</span><span class="val">120 000 €</span></div>
+        <div class="calc-line"><span class="lbl">Prix de vente</span><span class="val">195 000 €</span></div>
+        <div class="calc-line total"><span class="lbl">Résultat = 195 000 − 120 000</span><span class="val">+75 000 €</span></div>
+        <p style="margin:12px 0 0;font-size:14px;">Bien non amortissable détenu plus de 2 ans → plus-value <b>de long terme</b>. Imposée au taux réduit (≈ 30 %), soit un impôt d'environ <b>22 500 €</b>.</p>
+      </div>
+
+      <div class="calc">
+        <div class="calc-head"><span class="name">Camionnette</span><span class="verdict v-neg">Moins-value · court terme</span></div>
+        <div class="calc-line"><span class="lbl">VNC = 24 000 − 7 200</span><span class="val">16 800 €</span></div>
+        <div class="calc-line"><span class="lbl">Prix de vente</span><span class="val">14 000 €</span></div>
+        <div class="calc-line total"><span class="lbl">Résultat = 14 000 − 16 800</span><span class="val">−2 800 €</span></div>
+        <p style="margin:12px 0 0;font-size:14px;">Vendue sous sa VNC : c'est une perte. Détenue moins de 2 ans → <b>moins-value de court terme</b> (règle automatique).</p>
+      </div>
+
+      <div class="calc">
+        <div class="calc-head"><span class="name">Brevet anti-usure</span><span class="verdict v-pos">Plus-value · régime favorable</span></div>
+        <div class="calc-line"><span class="lbl">Résultat net du brevet</span><span class="val">102 000 €</span></div>
+        <div class="calc-line"><span class="lbl">Taux réduit appliqué</span><span class="val">10 %</span></div>
+        <div class="calc-line total"><span class="lbl">Impôt dû</span><span class="val">10 200 €</span></div>
+        <p style="margin:12px 0 0;font-size:14px;">Pour encourager la recherche, les revenus de brevets bénéficient d'un taux réduit à <b>10 %</b>, plus avantageux que le régime classique.</p>
+      </div>
+
+      <div class="calc">
+        <div class="calc-head"><span class="name">Titres de participation</span><span class="verdict v-pos">Plus-value · long terme</span></div>
+        <div class="calc-line"><span class="lbl">Plus-value constatée</span><span class="val">33 000 €</span></div>
+        <div class="calc-line"><span class="lbl">Taux BIC / IR</span><span class="val">30 %</span></div>
+        <div class="calc-line total"><span class="lbl">Impôt dû</span><span class="val">9 900 €</span></div>
+        <p style="margin:12px 0 0;font-size:14px;">Bien financier non amortissable détenu plus de 2 ans → <b>plus-value de long terme</b>, imposée à 30 %.</p>
+      </div>
+
+      <div class="note"><b>Dernière étape — la compensation.</b> En fin d'exercice, on additionne séparément tous les gains et pertes de court terme d'un côté, et ceux de long terme de l'autre. On obtient une plus-value (ou moins-value) <b>nette</b> de court terme et une de long terme. C'est seulement sur ces résultats nets qu'on calcule l'impôt.</div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="pager">
+      <button class="prev" onclick="go('cours')"><div class="dir">← Précédent</div><div class="ttl">Le cours</div></button>
+      <button class="next" onclick="go('schema')"><div class="dir">Suivant →</div><div class="ttl">Le schéma</div></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCHEMA ============ -->
+<div class="page" id="page-schema">
+  <header class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow">Le schéma</div>
+      <h1>Le raisonnement en cinq questions</h1>
+      <p class="lede">Dans l'ordre, les questions à se poser pour traiter <strong>n'importe quelle vente de bien</strong>. Ce schéma résume tout le projet.</p>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <div class="flow">
+        <div class="flow-step"><div class="flow-q">1. Le résultat est-il positif ou négatif&nbsp;?</div><div class="flow-branch"><span>Positif → plus-value (gain)</span><span>Négatif → moins-value (perte)</span></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="flow-q">2. Le bien était-il amortissable&nbsp;?</div><div class="flow-branch"><span>Oui → il s'usait</span><span>Non → terrain, titres…</span></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="flow-q">3. Détenu depuis plus ou moins de 2 ans&nbsp;?</div><div class="flow-branch"><span>Moins de 2 ans</span><span>Plus de 2 ans</span></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="flow-q">4. On obtient le classement : court terme ou long terme</div><div class="flow-branch"><span>Court terme → imposé comme le bénéfice</span><span>Long terme → taux réduit</span></div></div>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-step"><div class="flow-q">5. Avant d'imposer : vérifier une exonération possible</div><div class="flow-branch"><span>Petites entreprises (art. 151 septies)</span><span>Départ en retraite, transmission…</span></div></div>
+      </div>
+      <div class="note"><b>Astuce de lecture.</b> La première question (positif ou négatif&nbsp;?) sépare les gains des pertes. Les deux questions suivantes suffisent ensuite à classer le résultat. C'est tout.</div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="pager">
+      <button class="prev" onclick="go('cas')"><div class="dir">← Précédent</div><div class="ttl">Le cas pratique</div></button>
+      <button class="next" onclick="go('jeu')"><div class="dir">Suivant →</div><div class="ttl">Le jeu</div></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ JEU ============ -->
+<div class="page" id="page-jeu">
+  <header class="page-hero">
+    <div class="wrap">
+      <div class="eyebrow">Le jeu</div>
+      <h1>À vous de juger</h1>
+      <p class="lede">DUPONT INDUSTRIE vend des biens. Pour chacun, décidez s'il s'agit d'un <strong>gain</strong> ou d'une <strong>perte</strong>, puis classez-le. Une explication suit chaque réponse.</p>
+    </div>
+  </header>
+
+  <section>
+    <div class="wrap">
+      <div class="game">
+        <div class="progress-row" id="progressRow">
+          <span id="qcount">Question 1 / 8</span>
+          <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+          <span class="score">Score <b id="scoreVal">0</b></span>
+        </div>
+
+        <div class="card-q" id="cardQ">
+          <div class="scenario-label" id="scLabel">Vente n°1</div>
+          <div class="scenario-name" id="scName"></div>
+          <div class="scenario-desc" id="scDesc"></div>
+          <div class="facts" id="scFacts"></div>
+          <div class="q-prompt" id="qPrompt"></div>
+          <div class="choices" id="choices"></div>
+          <div class="feedback" id="feedback"></div>
+          <button class="next-btn" id="nextBtn" onclick="nextStep()">Continuer</button>
+        </div>
+
+        <div class="result-screen" id="resultScreen">
+          <div class="big" id="finalScore">0</div>
+          <div class="out-of">sur <span id="finalMax">8</span> points</div>
+          <h2 id="finalTitle"></h2>
+          <p id="finalMsg"></p>
+          <div class="result-actions">
+            <button class="btn-primary" onclick="restartGame()">Rejouer</button>
+            <button class="btn-ghost" onclick="go('cours')">Revoir le cours</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <b>Projet de fiscalité — Module BIC</b><br>
+    Plus et moins-values professionnelles · Cas pratique DUPONT INDUSTRIE
+    <div class="src">Sources : Code général des impôts (art. 39 quindecies, 39 quaterdecies, 151 septies, 151 septies A, 238 quindecies) · BOFiP.</div>
+  </div>
+</footer>
+
+<script>
+/* ---------- NAVIGATION ENTRE PAGES ---------- */
+function go(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pg=document.getElementById('page-'+name);
+  if(pg) pg.classList.add('active');
+  document.querySelectorAll('.nav-links button[data-nav]').forEach(b=>{
+    b.classList.toggle('current', b.getAttribute('data-nav')===name);
+  });
+  document.getElementById('navLinks').classList.remove('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toggleMenu(){ document.getElementById('navLinks').classList.toggle('open'); }
+
+/* ---------- DONNÉES DU JEU ---------- */
+const scenarios = [
+  { name:"Tour numérique", desc:"Une machine-outil de l'atelier, achetée il y a 5 ans.",
+    facts:[{k:"Prix d'achat",v:"48 000 €"},{k:"Amortissements",v:"30 000 €"},{k:"Prix de vente",v:"22 000 €"},{k:"Détention",v:"5 ans"}],
+    vnc:"VNC = 48 000 − 30 000 = 18 000 €", result:"Vente 22 000 − VNC 18 000 = +4 000 €",
+    gain:true, longTerme:false,
+    explainGain:"Le bien est vendu 22 000 € alors qu'il ne vaut plus que 18 000 € dans les comptes. C'est un gain de 4 000 €.",
+    explainClass:"Bien amortissable, et le gain (4 000 €) reste inférieur aux amortissements déduits (30 000 €). La plus-value est donc de court terme." },
+  { name:"Entrepôt", desc:"Un local de stockage acheté il y a 8 ans. Un terrain/bâtiment ne s'amortit pas ici.",
+    facts:[{k:"Prix d'achat",v:"120 000 €"},{k:"Amortissements",v:"0 €"},{k:"Prix de vente",v:"195 000 €"},{k:"Détention",v:"8 ans"}],
+    vnc:"VNC = prix d'achat = 120 000 € (non amortissable)", result:"Vente 195 000 − VNC 120 000 = +75 000 €",
+    gain:true, longTerme:true,
+    explainGain:"Vendu 195 000 € pour une valeur de 120 000 € : un gain de 75 000 €.",
+    explainClass:"Bien non amortissable détenu plus de 2 ans → plus-value de long terme, imposée au taux réduit." },
+  { name:"Camionnette", desc:"Un utilitaire acheté il y a seulement 14 mois.",
+    facts:[{k:"Prix d'achat",v:"24 000 €"},{k:"Amortissements",v:"7 200 €"},{k:"Prix de vente",v:"14 000 €"},{k:"Détention",v:"14 mois"}],
+    vnc:"VNC = 24 000 − 7 200 = 16 800 €", result:"Vente 14 000 − VNC 16 800 = −2 800 €",
+    gain:false, longTerme:false,
+    explainGain:"Vendue 14 000 € alors qu'elle vaut encore 16 800 € : c'est une perte de 2 800 €.",
+    explainClass:"Une moins-value sur un bien détenu moins de 2 ans est toujours de court terme." },
+  { name:"Titres de participation", desc:"Des parts détenues dans une autre société depuis plus de 2 ans.",
+    facts:[{k:"Nature",v:"Financier"},{k:"Amortissable",v:"Non"},{k:"Plus-value",v:"+33 000 €"},{k:"Détention",v:"> 2 ans"}],
+    vnc:"Bien financier non amortissable", result:"Plus-value constatée = +33 000 €",
+    gain:true, longTerme:true,
+    explainGain:"L'opération dégage un gain de 33 000 €.",
+    explainClass:"Bien non amortissable détenu plus de 2 ans → plus-value de long terme (taux 30 %)." }
+];
+
+let sIndex=0, phase=0, score=0;
+const POINTS_TOTAL=scenarios.length*2;
+const el=id=>document.getElementById(id);
+
+function renderScenario(){
+  const s=scenarios[sIndex];
+  el('scLabel').textContent="Vente n°"+(sIndex+1);
+  el('scName').textContent=s.name;
+  el('scDesc').textContent=s.desc;
+  el('scFacts').innerHTML=s.facts.map(f=>`<div class="fact"><div class="fk">${f.k}</div><div class="fv">${f.v}</div></div>`).join('');
+  updateProgress(); renderPhase();
+}
+function updateProgress(){
+  const done=sIndex*2+phase;
+  el('qcount').textContent="Question "+(done+1)+" / "+POINTS_TOTAL;
+  el('barFill').style.width=(done/POINTS_TOTAL*100)+"%";
+  el('scoreVal').textContent=score;
+}
+function renderPhase(){
+  const s=scenarios[sIndex];
+  el('feedback').className="feedback"; el('feedback').innerHTML="";
+  el('nextBtn').className="next-btn";
+  if(phase===0){
+    el('qPrompt').textContent="Cette vente dégage-t-elle un gain ou une perte ?";
+    buildChoices([{label:"Une plus-value (gain)",correct:s.gain},{label:"Une moins-value (perte)",correct:!s.gain}]);
+  }else{
+    el('qPrompt').textContent="Comment classe-t-on ce résultat ?";
+    buildChoices([{label:"Court terme",correct:!s.longTerme},{label:"Long terme",correct:s.longTerme}]);
+  }
+}
+function buildChoices(options){
+  const box=el('choices'); box.innerHTML="";
+  options.forEach(opt=>{
+    const b=document.createElement('button');
+    b.className="choice"; b.textContent=opt.label;
+    b.onclick=()=>answer(b,opt.correct,options);
+    box.appendChild(b);
+  });
+}
+function answer(btn,isCorrect,options){
+  const s=scenarios[sIndex];
+  const btns=el('choices').querySelectorAll('.choice');
+  btns.forEach((b,i)=>{ b.disabled=true; if(options[i].correct) b.classList.add('correct'); });
+  if(!isCorrect) btn.classList.add('wrong');
+  if(isCorrect) score++;
+  updateProgress();
+  const fb=el('feedback');
+  const explain=phase===0?s.explainGain:s.explainClass;
+  const calc=phase===0?(s.vnc+"<br>"+s.result):"";
+  fb.className="feedback show "+(isCorrect?"ok":"ko");
+  fb.innerHTML=`<b>${isCorrect?"Correct.":"Pas tout à fait."}</b> ${explain}`+(calc?`<div class="calc-mini">${calc}</div>`:"");
+  el('nextBtn').className="next-btn show";
+  el('nextBtn').textContent=(sIndex===scenarios.length-1&&phase===1)?"Voir mon score":"Continuer";
+}
+function nextStep(){
+  if(phase===0){ phase=1; renderScenario(); }
+  else{ phase=0; sIndex++; if(sIndex>=scenarios.length){ endGame(); } else { renderScenario(); } }
+}
+function endGame(){
+  el('cardQ').style.display="none";
+  el('progressRow').style.display="none";
+  el('resultScreen').classList.add('show');
+  el('finalScore').textContent=score;
+  el('finalMax').textContent=POINTS_TOTAL;
+  let title,msg; const pct=score/POINTS_TOTAL;
+  if(pct===1){ title="Sans faute !"; msg="Vous maîtrisez le calcul, le sens du résultat et le classement. Prêt pour l'oral."; }
+  else if(pct>=0.6){ title="Bien joué."; msg="Les bases sont là. Un petit tour par le cours sur le classement court/long terme et ce sera parfait."; }
+  else{ title="À retravailler."; msg="Pas de panique : reprenez le cours, surtout la partie sur la VNC et le classement, puis retentez le jeu."; }
+  el('finalTitle').textContent=title; el('finalMsg').textContent=msg;
+}
+function restartGame(){
+  sIndex=0; phase=0; score=0;
+  el('cardQ').style.display="block";
+  el('progressRow').style.display="flex";
+  el('resultScreen').classList.remove('show');
+  renderScenario();
+}
+renderScenario();
+</script>
+</body>
+</html>
